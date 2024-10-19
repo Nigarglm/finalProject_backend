@@ -72,7 +72,7 @@ export const editContact = async (req, res) => {
             return res.status(404).json({ message: "Social media link not found" });
         }
 
-        res.status(200).json({ message: "Social media link updated", social: updatedContact });
+        res.status(200).json({ message: "Social media link updated", contact: updatedContact });
     } catch (error) {
         console.error('Error updating social media link:', error);
         res.status(500).json({ message: "Internal server error" });
@@ -94,7 +94,7 @@ export const deleteContact = async (req, res) => {
             return res.status(404).json({ message: "Social media link not found" });
         }
 
-        res.status(200).json({ message: "Social media link deleted successfully", social: deletedContact });
+        res.status(200).json({ message: "Social media link deleted successfully", contact: deletedContact });
     } catch (error) {
         console.error('Error deleting social media link:', error);
         res.status(500).json({ message: "Internal server error" });
