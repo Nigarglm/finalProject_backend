@@ -16,7 +16,6 @@ export const createUser = async (req, res) => {
       let conflictField = "";
       if (userExists.email === email) conflictField = "Email";
       else if (userExists.userName === userName) conflictField = "Username";
-      else if (userExists.photo === photo) conflictField = "Photo";
 
       return res.status(400).json({ message: `${conflictField} already exists` });
     }

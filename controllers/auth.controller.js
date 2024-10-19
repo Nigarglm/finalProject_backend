@@ -8,7 +8,7 @@ const omitPassword = (user) => {
 };
 
 export const signUp = async (req, res) => {
-  const { email, fullName, userName, password, confirmPassword, photo, isAdmin } =
+  const { email, fullName, userName, password, confirmPassword, photo, isAdmin, isSubscribed } =
     req.body;
 
   const responseMessage = [
@@ -19,6 +19,7 @@ export const signUp = async (req, res) => {
     ["photo", "Accepted"],
     ["email", "Accepted"],
     ["isAdmin", "Accepted"],
+    ["isSubscribed", "Accepted"]
   ];
 
   if (fullName.length < 3)
