@@ -5,6 +5,7 @@ import userRoutes from './routes/user.routes.js'
 import authRotes from './routes/auth.routes.js'
 import movieRoutes from './routes/movie.routes.js'
 import faqRoutes from './routes/faq.routes.js'
+import contactRoutes from './routes/contact.routes.js'
 import cors from 'cors'
 
 const app = express()
@@ -21,6 +22,7 @@ app.use('/users', userRoutes);
 app.use('/auth', authRotes);
 app.use('/movies', movieRoutes);
 app.use('/faq', faqRoutes);
+app.use('/contact', contactRoutes);
 
 
 const PORT = process.env.PORT
