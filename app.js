@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import userRoutes from './routes/user.routes.js'
 import authRotes from './routes/auth.routes.js'
 import movieRoutes from './routes/movie.routes.js'
+import faqRoutes from './routes/faq.routes.js'
 import cors from 'cors'
 
 const app = express()
@@ -19,6 +20,7 @@ app.use(cors({
 app.use('/users', userRoutes);
 app.use('/auth', authRotes);
 app.use('/movies', movieRoutes);
+app.use('/faq', faqRoutes);
 
 
 const PORT = process.env.PORT
