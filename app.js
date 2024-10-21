@@ -7,6 +7,7 @@ import movieRoutes from './routes/movie.routes.js'
 import faqRoutes from './routes/faq.routes.js'
 import contactRoutes from './routes/contact.routes.js'
 import herosecRoutes from './routes/herosec.routes.js'
+import logoRoutes from './routes/logo.routes.js'
 import cors from 'cors'
 
 const app = express()
@@ -24,7 +25,8 @@ app.use('/auth', authRotes);
 app.use('/movies', movieRoutes);
 app.use('/faq', faqRoutes);
 app.use('/contact', contactRoutes);
-app.use('/hero', herosecRoutes)
+app.use('/hero', herosecRoutes);
+app.use('/logo', logoRoutes)
 
 
 const PORT = process.env.PORT
