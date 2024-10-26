@@ -36,7 +36,7 @@ export const getSingleMovie = async (req, res) => {
 
 // Create a new movie
 export const createMovie = async (req, res) => {
-  const { name, description, country, duration, year, category, main_actors, comments, rating, price } = req.body;
+  const { name, description, country, duration, year, category, type, main_actors, comments, rating, price } = req.body;
   
   const { posterFile, trailerFile, videoFile } = req.files; // Assuming you're using middleware like multer for file uploads
 
@@ -61,6 +61,7 @@ export const createMovie = async (req, res) => {
       duration,
       year,
       category,
+      type,
       main_actors,
       comments,
       rating,

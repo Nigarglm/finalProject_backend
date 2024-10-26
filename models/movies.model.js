@@ -1,3 +1,4 @@
+import { required } from "joi";
 import mongoose from "mongoose";
 
 const movieSchema = new mongoose.Schema(
@@ -36,6 +37,10 @@ const movieSchema = new mongoose.Schema(
         required: true
     },
     category:{
+        type: String,
+        required: true
+    },
+    type:{
         type: String,
         required: true
     },
