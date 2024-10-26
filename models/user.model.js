@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     photo: {
-      type: String,
+      type: String, 
       required: true,
     },
     fullName: {

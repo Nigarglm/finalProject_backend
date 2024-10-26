@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const HeroSchema = new mongoose.Schema({
   bg_image: {
-    type: String,
+    type: String,  
     required: true,
   },
   text: {

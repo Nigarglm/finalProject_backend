@@ -1,103 +1,107 @@
-import Contact from "../models/contact.model.js"
+import Contact from '../models/contact.model.js'; 
+import { v2 as cloudinaryV2 } from 'cloudinary';
+import dotenv from 'dotenv';
 
+dotenv.config();
 
+// Cloudinary configuration
+cloudinaryV2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Get all contacts
 export const getAllContacts = async (req, res) => {
-    try {
-        const contacts = await Contact.find();
-        res.status(200).json(contacts);
-    } catch (error) {
-        console.error("Error in getAllContacts:", error);
-        res.status(500).json({ message: "Error fetching social media links" });
-    }
-}
-
-
-export const getSingleContact = async (req, res) => {
-    try {
-        const contactId = req.params.id;
-        const contact = await Contact.findById(contactId);
-
-        if (!contact) {
-            return res.status(404).json({ message: "Social media link not found" });
-        }
-
-        res.status(200).json(contact);
-    } catch (error) {
-        console.error("Error in getSingleContact:", error);
-        res.status(500).json({ message: "Error fetching social media link" });
-    }
-}
-
-
-export const createContact = async (req, res) => {
-    try {
-        const { name, icon, link } = req.body;
-
-        if (!name ||!icon ||!link) {
-            return res.status(400).json({ message: "All fields (name, icon, link) are required" });
-        }
-
-        const newContact = new Contact({ name, icon, link });
-        await newContact.save();
-
-        res.status(201).json({ message: "Social media link created successfully", contact: newContact });
-    } catch (error) {
-        console.error("Error in createContact:", error);
-        if (error.name === "ValidationError") {
-            const messages = Object.values(error.errors).map((val) => val.message);
-            return res.status(400).json({ message: messages.join(". ") });
-        }
-        res.status(500).json({ message: "Server error" });
-    }
-}
-
-
-export const editContact = async (req, res) => {
-    try {
-        const contactId = req.params.id;
-        const { name, icon, link } = req.body;
-
-        if (!mongoose.Types.ObjectId.isValid(contactId)) {
-            return res.status(400).json({ message: "Invalid social media link ID format" });
-        }
-
-        const updateData = {};
-        if (name !== undefined) updateData.name = name;
-        if (icon !== undefined) updateData.icon = icon;
-        if (link !== undefined) updateData.link = link;
-
-        const updatedContact = await Contact.findByIdAndUpdate(contactId, updateData, { new: true, runValidators: true });
-
-        if (!updatedContact) {
-            return res.status(404).json({ message: "Social media link not found" });
-        }
-
-        res.status(200).json({ message: "Social media link updated", contact: updatedContact });
-    } catch (error) {
-        console.error('Error updating social media link:', error);
-        res.status(500).json({ message: "Internal server error" });
-    }
+  try {
+    const contacts = await Contact.find();
+    res.status(200).json(contacts);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching contacts', error });
+  }
 };
 
-
-export const deleteContact = async (req, res) => {
-    try {
-        const contactId = req.params.id;
-
-        if (!mongoose.Types.ObjectId.isValid(contactId)) {
-            return res.status(400).json({ message: "Invalid social media link ID format" });
-        }
-
-        const deletedContact = await Contact.findByIdAndDelete(contactId);
-
-        if (!deletedContact) {
-            return res.status(404).json({ message: "Social media link not found" });
-        }
-
-        res.status(200).json({ message: "Social media link deleted successfully", contact: deletedContact });
-    } catch (error) {
-        console.error('Error deleting social media link:', error);
-        res.status(500).json({ message: "Internal server error" });
+// Get a single contact by ID
+export const getSingleContact = async (req, res) => {
+  try {
+    const contact = await Contact.findById(req.params.id);
+    if (!contact) {
+      return res.status(404).json({ message: 'Contact not found' });
     }
-}
+    res.status(200).json(contact);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching contact', error });
+  }
+};
+
+// Create a new contact
+export const createContact = async (req, res) => {
+  const { name, link } = req.body;
+  const iconFile = req.file; // Assuming you're using middleware like multer for file uploads
+
+  if (!iconFile) {
+    return res.status(400).json({ message: 'Contact icon is required' });
+  }
+
+  try {
+    // Upload icon to Cloudinary
+    const result = await cloudinaryV2.uploader.upload(iconFile.path);
+
+    // Create the contact entry
+    const newContact = new Contact({
+      name,
+      icon: result.secure_url,
+      link,
+    });
+
+    await newContact.save();
+    res.status(201).json(newContact);
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating contact', error });
+  }
+};
+
+// Edit a contact
+export const editContact = async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  if (req.file) {
+    const iconFile = req.file;
+
+    try {
+      // Upload new icon to Cloudinary
+      const result = await cloudinaryV2.uploader.upload(iconFile.path);
+      updates.icon = result.secure_url;
+    } catch (error) {
+      return res.status(500).json({ message: 'Error uploading icon', error });
+    }
+  }
+
+  try {
+    const contact = await Contact.findByIdAndUpdate(id, updates, { new: true });
+    if (!contact) {
+      return res.status(404).json({ message: 'Contact not found' });
+    }
+    res.status(200).json(contact);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating contact', error });
+  }
+};
+
+// Delete a contact
+export const deleteContact = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const contact = await Contact.findByIdAndDelete(id);
+    if (!contact) {
+      return res.status(404).json({ message: 'Contact not found' });
+    }
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting contact', error });
+  }
+};
+
 

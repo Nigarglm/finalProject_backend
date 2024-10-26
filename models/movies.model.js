@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const movieSchema = new mongoose.Schema(
   {
     poster:{
-        type: String,
+        type: String,   
         required: true
     },
     name:{
@@ -12,11 +12,11 @@ const movieSchema = new mongoose.Schema(
         unique: true
     },
     trailer:{
-        type: String,
+        type: String,    
         required: true
     },
     video:{
-        type: String,
+        type: String,      
         required: true
     },
     description:{
@@ -28,7 +28,7 @@ const movieSchema = new mongoose.Schema(
         required: true
     },
     duration:{
-        type: String,
+        type: Number,       
         required: true
     },
     year:{

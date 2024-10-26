@@ -1,128 +1,129 @@
-import Movie from "../models/movies.model.js";
+import Movie from '../models/movies.model.js'; 
+import { v2 as cloudinaryV2 } from 'cloudinary';
+import dotenv from 'dotenv';
 
-export const createMovie = async (req, res) => {
-  try {
-    const { poster, name, trailer, video, description, country, duration, year, category, main_actors, comments, rating, price } = req.body;
+dotenv.config();
 
-    if (!poster || !name || !trailer || !video || !description || !country || !duration || !year || !category || !main_actors || !comments || !rating || !price) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
+// Cloudinary configuration
+cloudinaryV2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-    const movieExists = await Movie.findOne({
-      $or: [{ name }, { trailer }, { video }],
-    });
-    if (movieExists) {
-      let conflictField = "";
-      if (movieExists.name === name) conflictField = "Name";
-      else if (movieExists.trailer === trailer) conflictField = "Trailer";
-
-      return res.status(400).json({ message: `${conflictField} already exists` });
-    }
-
-    const newMovie = new Movie({ name, trailer, video, description, country, duration, year, category, main_actors, comments });
-    await newMovie.save();
-
-    const movieResponse = {
-      id: newMovie._id,
-      name: newMovie.name,
-      trailer: newMovie.trailer,
-      video: newMovie.video,
-      description: newMovie.description,
-      country: newMovie.country,
-      duration: newMovie.duration,
-      year: newMovie.year,
-      category: newMovie.category,
-      main_actors: newMovie.main_actors,
-      comments: newMovie.comments,
-      createdAt: newUser.createdAt,
-      updatedAt: newUser.updatedAt,
-    };
-
-    res.status(201).json({ message: "Movie created successfully", movie: movieResponse });
-  } catch (error) {
-    console.error("Error in createMovie:", error);
-    if (error.code === 11000) {
-      const field = Object.keys(error.keyValue)[0];
-      return res.status(400).json({
-        message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`,
-      });
-    }
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-export const getMovies = async (req, res) => {
+// Get all movies
+export const getAllMovies = async (req, res) => {
   try {
     const movies = await Movie.find();
     res.status(200).json(movies);
   } catch (error) {
-    console.error("Error in getMovies:", error);
-    res.status(500).json({ message: "Error fetching movies" });
+    res.status(500).json({ message: 'Error fetching movies', error });
   }
 };
 
+// Get a single movie by ID
 export const getSingleMovie = async (req, res) => {
   try {
-    const movieId = req.params.id;
-
-    const movie = await Movie.findById(movieId);
+    const movie = await Movie.findById(req.params.id);
     if (!movie) {
-      return res.status(404).json({ message: "Movie not found" });
+      return res.status(404).json({ message: 'Movie not found' });
     }
-
     res.status(200).json(movie);
   } catch (error) {
-    console.error("Error in getSingleMovie:", error);
-    res.status(500).json({ message: "Error fetching movie" });
+    res.status(500).json({ message: 'Error fetching movie', error });
   }
 };
 
-export const editMovie = async (req, res) => {
+// Create a new movie
+export const createMovie = async (req, res) => {
+  const { name, description, country, duration, year, category, main_actors, comments, rating, price } = req.body;
+  
+  const { posterFile, trailerFile, videoFile } = req.files; // Assuming you're using middleware like multer for file uploads
+
+  if (!posterFile || !trailerFile || !videoFile) {
+    return res.status(400).json({ message: 'All files (poster, trailer, video) are required' });
+  }
+
   try {
-    const movieId = req.params.id;
+    // Upload files to Cloudinary
+    const posterResult = await cloudinaryV2.uploader.upload(posterFile.path);
+    const trailerResult = await cloudinaryV2.uploader.upload(trailerFile.path);
+    const videoResult = await cloudinaryV2.uploader.upload(videoFile.path);
 
-    const existingMovie = await Movie.findById(movieId);
-    if (!existingMovie) {
-      return res.status(404).json({ message: "Movie not found" });
-    }
-
-    const { name, trailer, video, description, country, duration, year, category, main_actors, comments } = req.body;
-
-    const updateData = { name, trailer, video, description, country, duration, year, category, main_actors, comments };
-
-
-    const updatedMovie = await Movie.findByIdAndUpdate(movieId, updateData, {
-      new: true,
-      runValidators: true,
+    // Create the movie
+    const newMovie = new Movie({
+      poster: posterResult.secure_url,
+      name,
+      trailer: trailerResult.secure_url,
+      video: videoResult.secure_url,
+      description,
+      country,
+      duration,
+      year,
+      category,
+      main_actors,
+      comments,
+      rating,
+      price,
     });
 
-    res.status(200).json({ message: "Movie updated successfully", movie: updatedMovie });
+    await newMovie.save();
+    res.status(201).json(newMovie);
   } catch (error) {
-    console.error("Error in editMovie:", error);
-    if (error.code === 11000) {
-      const field = Object.keys(error.keyValue)[0];
-      return res.status(400).json({
-        message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`,
-      });
-    }
-    res.status(500).json({ message: "Error editing movie", error: error.message }); 
+    res.status(500).json({ message: 'Error creating movie', error });
   }
 };
 
+// Edit a movie
+export const editMovie = async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
 
-export const deleteMovie = async (req, res) => {
+  if (req.files) {
+    const { posterFile, trailerFile, videoFile } = req.files;
+
+    try {
+      // Upload new files to Cloudinary if provided
+      if (posterFile) {
+        const posterResult = await cloudinaryV2.uploader.upload(posterFile.path);
+        updates.poster = posterResult.secure_url;
+      }
+      if (trailerFile) {
+        const trailerResult = await cloudinaryV2.uploader.upload(trailerFile.path);
+        updates.trailer = trailerResult.secure_url;
+      }
+      if (videoFile) {
+        const videoResult = await cloudinaryV2.uploader.upload(videoFile.path);
+        updates.video = videoResult.secure_url;
+      }
+    } catch (error) {
+      return res.status(500).json({ message: 'Error uploading files', error });
+    }
+  }
+
   try {
-    const movieId = req.params.id;
-    console.log("Deleting movie with ID:", movieId);
-
-    const movie = await Movie.findByIdAndDelete(movieId);
+    const movie = await Movie.findByIdAndUpdate(id, updates, { new: true });
     if (!movie) {
-      return res.status(404).json({ message: "Movie not found" });
+      return res.status(404).json({ message: 'Movie not found' });
     }
-
-    res.status(200).json({ message: "Movie deleted successfully" });
+    res.status(200).json(movie);
   } catch (error) {
-    console.error("Error in deleteMovie:", error);
-    res.status(500).json({ message: "Error deleting movie", error });
+    res.status(500).json({ message: 'Error updating movie', error });
   }
 };
+
+// Delete a movie
+export const deleteMovie = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const movie = await Movie.findByIdAndDelete(id);
+    if (!movie) {
+      return res.status(404).json({ message: 'Movie not found' });
+    }
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting movie', error });
+  }
+};
+

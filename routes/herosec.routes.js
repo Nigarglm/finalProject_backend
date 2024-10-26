@@ -1,11 +1,12 @@
 import express from "express";
-import {getHero, createHero, editHero, deleteHero} from "../controllers/herosec.controller.js"
+import {getAllHeroes, getSingleHero, createHero, editHero, deleteHero} from "../controllers/herosec.controller.js"
 
 
 const router = express.Router();
 
 
-router.get("/", getHero);
+router.get("/", getAllHeroes);
+router.get("/:id", getSingleHero);
 router.post("/", createHero);
 router.patch("/:id", editHero);
 router.delete("/:id", deleteHero);
