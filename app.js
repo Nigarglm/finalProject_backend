@@ -9,6 +9,7 @@ import contactRoutes from './routes/contact.routes.js'
 import herosecRoutes from './routes/herosec.routes.js'
 import logoRoutes from './routes/logo.routes.js'
 import categoryRoutes from './routes/category.routes.js'
+import commentRoutes from './routes/comments.routes.js'
 import cors from 'cors'
 
 const app = express()
@@ -29,6 +30,7 @@ app.use('/contact', contactRoutes);
 app.use('/hero', herosecRoutes);
 app.use('/logo', logoRoutes);
 app.use('/category', categoryRoutes);
+app.use('/comments', commentRoutes);
 
 
 const PORT = process.env.PORT
