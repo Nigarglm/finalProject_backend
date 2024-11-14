@@ -25,13 +25,13 @@ export const getSingleSubscribtion = async (req, res) => {
 
 // Create a new subscription
 export const createSubscribtion = async (req, res) => {
-  const { name, price, describtion, userId } = req.body;
+  const { name, price, description, userId } = req.body;
 
   try {
     const newSubscription = new Subscribtions({
       name,
       price,
-      describtion,
+      description,
       userId,
     });
 

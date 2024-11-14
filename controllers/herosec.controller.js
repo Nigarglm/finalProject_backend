@@ -49,7 +49,7 @@ export const createHero = async (req, res) => {
 
     // Create the hero section
     const newHero = new Hero({
-      bg_image: result.secure_url,
+      image: result.secure_url,
       text,
     });
 
@@ -71,7 +71,7 @@ export const editHero = async (req, res) => {
     try {
       // Upload new background image to Cloudinary
       const result = await cloudinaryV2.uploader.upload(bgImageFile.path);
-      updates.bg_image = result.secure_url;
+      updates.image = result.secure_url;
     } catch (error) {
       return res.status(500).json({ message: 'Error uploading background image', error });
     }

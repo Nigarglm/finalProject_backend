@@ -36,9 +36,12 @@ export const getSingleMovie = async (req, res) => {
 
 // Create a new movie
 export const createMovie = async (req, res) => {
-  const { name, description, country, duration, year, category, type, main_actors, comments, rating, price } = req.body;
+  const { name, description, country, duration, year, category, type, mainActors, comments, rating, price } = req.body;
   
-  const { posterFile, trailerFile, videoFile } = req.files; // Assuming you're using middleware like multer for file uploads
+  const { files } = req; // Using 'files' instead of destructuring
+  const posterFile = files?.posterFile ? files.posterFile[0] : null; // Accessing the first file in case of multiple uploads
+  const trailerFile = files?.trailerFile ? files.trailerFile[0] : null;
+  const videoFile = files?.videoFile ? files.videoFile[0] : null;
 
   if (!posterFile || !trailerFile || !videoFile) {
     return res.status(400).json({ message: 'All files (poster, trailer, video) are required' });
@@ -62,7 +65,7 @@ export const createMovie = async (req, res) => {
       year,
       category,
       type,
-      main_actors,
+      mainActors,
       comments,
       rating,
       price,
